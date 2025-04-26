@@ -4,6 +4,16 @@ class DIMACSReader:
         self.num_clauses = 0
         self.clauses = []
 
+    def get_clauses(self):
+        clauses = []
+        for clause in self.clauses:
+            new_clause = []
+            for (polarity, variable) in clause:
+                new_clause.append(polarity * (variable+1))
+            clauses.append(new_clause)
+
+        return clauses
+
     def read(self, fn:str):
         with open(fn, "r") as f:
             line = f.readline()

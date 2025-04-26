@@ -3,6 +3,7 @@ from glob import glob
 
 from dimacs_reader import DIMACSReader
 from first_part import SimpleSolver
+from second_part import DLPPSolver
 
 
 def main():
@@ -13,6 +14,7 @@ def main():
         dimacs_reader.read(file)
 
         solver = SimpleSolver(dimacs_reader.num_vars, dimacs_reader.clauses, timeout=5)
+        solver = DLPPSolver(dimacs_reader.get_clauses(), timeout=5)
         try:
             is_sat = solver.solve()
             print(is_sat)
