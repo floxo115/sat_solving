@@ -1,5 +1,5 @@
 import pytest
-from .solver import Clause
+from .solver import Clause, Status
 
 def test_init_clause():
     clause = Clause([-1,2,-6, 10])
@@ -20,17 +20,17 @@ def test_init_clause_with_no_literal():
 def test_is_sat_with_true_assignment():
     clause = Clause([-1,2,-6, 10])
     assignment = {1:True, 2: False, 6: False}
-    assert clause.is_sat(assignment)
+    assert clause.is_sat(assignment) == Status.SATISFIED
 
 def test_is_sat_with_false_assignment():
     clause = Clause([-1,2,-6, 10])
-    assignment = {1:True, 2: False, 6: True}
-    assert not clause.is_sat(assignment)
+    assignment = {1:True, 2: False, 6: True, 10: False}
+    assert clause.is_sat(assignment) == Status.CONTRADICTION
 
 def test_is_sat_with_no_assignment():
     clause = Clause([-1,2,-6, 10])
-    assignment = {}
-    assert not clause.is_sat(assignment)
+    assignment = {2:False, 1: True}
+    assert clause.is_sat(assignment) == Status.UNSATURATED
 
 def test_watched_literals_with_unit_clause():
     clause = Clause([-1])

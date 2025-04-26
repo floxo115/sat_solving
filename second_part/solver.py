@@ -1,4 +1,11 @@
 from typing import Iterable, Dict
+from enum import Enum
+
+class Status(Enum):
+    SATISFIED = 1
+    CONTRADICTION = 2
+    UNSATURATED = 3
+
 
 
 class Clause:
@@ -10,14 +17,19 @@ class Clause:
         self.watch_pointer1 = 0
         self.watch_pointer2 = 1 if len(self.literals) > 1 else 0
 
-    def is_sat(self, assignment: Dict[int, bool]) -> bool:
+    def is_sat(self, assignment: Dict[int, bool]) -> Status:
+        checked_literal_counter = 0 
         for literal in self.literals:
             if abs(literal) in assignment.keys():
+                checked_literal_counter += 1
                 val = assignment[abs(literal)]
                 if literal > 0 and val or literal < 0 and not val:
-                    return True
+                    return Status.SATISFIED
 
-        return False
+        if checked_literal_counter == len(self.literals):
+            return Status.CONTRADICTION
+        elif checked_literal_counter < len(self.literals):
+            return Status.UNSATURATED
 
     def set_watchers(self, assignment: Dict[int, bool], new_variable: int):
         if new_variable <= 0:
@@ -98,4 +110,21 @@ class Clause:
 
 
 class DLPPSolver:
-    pass
+    def __init__(self, clauses: list[int], timeout=float("inf")):
+        if len(clauses) == 0:
+            raise ValueError("literals can not be empty")
+        
+        self.clauses = [Clause(literals) for literals in clauses]
+        self.assignment = {}
+        self.decision_level = 0
+        self.variable_stack = []
+        self.backtracking_stack = []
+
+    def is_sat(self, assignment: Dict[int, bool]) -> bool:
+        for clause in self.clauses:
+            if not clause.is_sat(assignment):
+                return False
+        
+        return True
+
+
