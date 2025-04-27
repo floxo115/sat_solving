@@ -14,15 +14,18 @@ class ImpossibleAssignmentError(Exception):
 
 class Clause:
     def __init__(self, literals: Iterable[int]):
-        if len(literals) == 0:
-            raise ValueError("literals can not be empty")
+        # if len(literals) == 0:
+        #     raise ValueError("literals can not be empty")
         self.literals = list(literals)
 
         self.watch_pointer1 = 0
         self.watch_pointer2 = 1 if len(self.literals) > 1 else 0
 
     def is_sat(self, assignment: Dict[int, bool]) -> Status:
-        checked_literal_counter = 0 
+        if len(self.literals) == 0:
+            return Status.CONTRADICTION
+
+        checked_literal_counter = 0
         for literal in self.literals:
             if abs(literal) in assignment.keys():
                 checked_literal_counter += 1
@@ -76,6 +79,9 @@ class Clause:
                 break
 
     def bcp(self, assignment: Dict[int, bool]):
+        if len(self.literals) == 0:
+            return None
+
         # if the clause is a unit clause we just return the variable and an assignment
         # that makes the literal True
         if self.watch_pointer1 == self.watch_pointer2:
@@ -118,8 +124,8 @@ class Clause:
 
 class DLPPSolver:
     def __init__(self, clauses: list[int], timeout=float("inf")):
-        if len(clauses) == 0:
-            raise ValueError("literals can not be empty")
+        # if len(clauses) == 0:
+        #     raise ValueError("literals can not be empty")
         
         self.clauses = [Clause(literals) for literals in clauses]
         self.variables = set()
@@ -211,35 +217,47 @@ class DLPPSolver:
     def solve(self):
         start_time = time.perf_counter()
         variables = self.variables.copy()
-        print(self.variables)
+        variable_stack = []
         while True:
             if time.perf_counter() - start_time > self.timeout:
                 raise TimeoutError("Timed out")
             while True:
                 try:
                     forced_assignments = self.bcp()
+                    #print(forced_assignments)
                 except ImpossibleAssignmentError:
                     break
                 if forced_assignments == {}:
                     break
 
             if self.is_sat(self.assignment) == Status.SATISFIED:
-                return self.assignment
+                return True
 
-            if self.is_sat(self.assignment) == Status.CONTRADICTION:
-                if self.decision_level == 0:
-                    return {}
+            elif self.is_sat(self.assignment) == Status.CONTRADICTION:
+                if len(variable_stack) == 0:
+                    return False
 
-                variable = self.variable_stack[self.backtracking_stack[-2]]
-                self.backtrack()
+                variable, dl = variable_stack.pop()
+                while self.decision_level != dl:
+                    self.backtrack()
+
                 try:
                     self.add_decision(variable, False)
                 except ImpossibleAssignmentError:
                     pass
-            else:
-                variable = variables.pop()
+            elif self.is_sat(self.assignment) == Status.UNSATURATED:
+                variable = None
+                for var in sorted(variables):
+                    if var not in self.assignment:
+                        variable = var
+                        break
+                if variable is None:
+                    # No variables left unassigned, should not happen normally here
+                    raise ValueError("No unassigned variables found")
+                variable_stack.append((variable, self.decision_level))
+                #print(variable, self.decision_level)
                 try:
-                    self.add_decision(variable, False)
+                    self.add_decision(variable, True)
                 except ImpossibleAssignmentError:
                     pass
 
