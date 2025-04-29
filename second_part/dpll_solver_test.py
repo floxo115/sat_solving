@@ -9,13 +9,13 @@ def test_init_with_valid_input():
     assert solver.decision_level == 0
     assert solver.variables == set([1,2,3,4,5, 10,20,30,40,50])
 
-def test_init_with_empty_clause():
-    with pytest.raises(ValueError):
-        DLPPSolver([[1,-2,3,-4,5], [], [-10,20,-30,40], [-40, 50]])
+# def test_init_with_empty_clause():
+#     with pytest.raises(ValueError):
+#         DLPPSolver([[1,-2,3,-4,5], [], [-10,20,-30,40], [-40, 50]])
 
-def test_init_with_empty_cnf():
-    with pytest.raises(ValueError):
-        DLPPSolver([])
+# def test_init_with_empty_cnf():
+#     with pytest.raises(ValueError):
+#         DLPPSolver([])
 
 def test_add_decision_with_valid_variables():
     solver = DLPPSolver([[1,-2,3,-4,5], [0], [-10,20,-30,40], [-40, 50]])

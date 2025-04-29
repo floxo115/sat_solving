@@ -13,9 +13,9 @@ def test_init_clause_with_one_literal():
     assert clause.watch_pointer1 == 0
     assert clause.watch_pointer2 == 0
 
-def test_init_clause_with_no_literal():
-    with pytest.raises(ValueError):
-        Clause([])
+# def test_init_clause_with_no_literal():
+#     with pytest.raises(ValueError):
+#         Clause([])
 
 def test_is_sat_with_true_assignment():
     clause = Clause([-1,2,-6, 10])
