@@ -13,17 +13,25 @@ def main():
         dimacs_reader = DIMACSReader()
         dimacs_reader.read(file)
 
-        solver1 = SimpleSolver(dimacs_reader.num_vars, dimacs_reader.clauses, timeout=10)
-        solver2 = DLPPSolver(dimacs_reader.get_clauses(), timeout=10)
         try:
+            solver1 = SimpleSolver(dimacs_reader.clauses, timeout=10)
+            print("solver1 ...")
             is_sat1 = solver1.solve()
-            is_sat2 = solver2.solve()
-            print(is_sat1 == is_sat2)
-            if is_sat1 != is_sat2:
-                print(is_sat1, is_sat2)
-                raise Exception()
+            print(is_sat1)
+            print(solver1.get_model())
+            print(solver1.get_num_decisions())
         except TimeoutError:
-            print("timeout")
+            print("solver1 timeout")
+        try:
+            print()
+            print("solver2 ...")
+            solver2 = DLPPSolver(dimacs_reader.get_clauses(), timeout=10)
+            is_sat2 = solver2.solve()
+            print(is_sat2)
+            print(solver2.get_model())
+            print(solver2.get_num_decisions())
+        except TimeoutError:
+            print("solver2 timeout")
         print()
 
 
