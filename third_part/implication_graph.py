@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Iterable, Set
+from typing import Dict, Iterable, Set, Tuple
 
 
 class ImplicationGraphException(Exception):
@@ -84,7 +84,12 @@ class ImplicationGraph(object):
             self.nodes[variable] = node
             return ImplicationGraphStates.NOT_CONFLICT
 
-    def get_conflict_clause(self) -> Set[int]:
+    def get_conflict_clause(self) -> Tuple[Set[int], int]:
+        """
+        Returns the conflict clause of the Implication Graph and its second-highest decision level
+        For deriving the conflict clause the last UIP is computed.
+        :return:
+        """
         if self.nodes[CONFLICT_NODE_IDX] is None:
             raise ImplicationGraphException("no UIP without a conflict clause")
 
@@ -105,12 +110,15 @@ class ImplicationGraph(object):
                     visited.append(n)
                     break
 
-        result = []
-        for variables in C.values():
-            result.extend(variables)
+        result_set = []
+        result_dec_levels = set()
+        for key, variables in C.items():
+            result_set.extend(variables)
+            result_dec_levels.add(key)
 
-        return set(result)
+        second_largest_dec_level = sorted(result_dec_levels)[-2] if len(result_dec_levels) > 1 else 0
 
+        return set(result_set), second_largest_dec_level
 
     def __repr__(self):
         s = "ImplicationGraph(\n"

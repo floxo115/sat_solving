@@ -37,12 +37,13 @@ def test_implication_graph_add_node():
     res = ig.create_node(-3, 1, [-2])
     assert res == ImplicationGraphStates.CONFLICT
     assert len(ig.nodes) == 5
-    assert ig.nodes[3].children == {0,}
-    assert ig.nodes[-3].children == {0,}
+    assert ig.nodes[3].children == {0, }
+    assert ig.nodes[-3].children == {0, }
 
     assert ig.nodes[CONFLICT_NODE_IDX].variable == CONFLICT_NODE_IDX
     assert ig.nodes[CONFLICT_NODE_IDX].parents == {3, -3}
     assert ig.nodes[CONFLICT_NODE_IDX].children == set()
+
 
 def test_implication_graph_add_edge_with_errors():
     ig = ImplicationGraph()
@@ -67,9 +68,10 @@ def test_implication_graph_add_edge_with_errors():
         ig.create_node(-2, 10, [])
 
     # try to add to the graph after a conflict occures
-    res = ig.create_node(-3, 1, [-2]) # creates the conflict
+    res = ig.create_node(-3, 1, [-2])  # creates the conflict
     with pytest.raises(ImplicationGraphException):
         ig.create_node(100, 1100, [])
+
 
 def test_implication_graph_get_conflict_clause():
     ig = ImplicationGraph()
@@ -81,15 +83,15 @@ def test_implication_graph_get_conflict_clause():
     ig.create_node(-1, 4, [])
     ig.create_node(2, 4, [-1])
     ig.create_node(3, 4, [-1, -7])
-    ig.create_node(4, 4, [2,3])
-    ig.create_node(6, 4, [4,-9])
+    ig.create_node(4, 4, [2, 3])
+    ig.create_node(6, 4, [4, -9])
     ig.create_node(5, 4, [-8, 4])
     ig.create_node(-5, 4, [6])
 
     res = ig.get_conflict_clause()
-    assert res == {-9, -8, 4}
+    assert res == ({-9, -8, 4}, 3)
 
-    # if we add a link from x2 to x8 we should end up at the decision as the UIP
+    # if we add a link from x3 to x9 we should end up at the decision as the UIP
     ig = ImplicationGraph()
     ig.create_node(-7, 1, [])
     ig.create_node(-8, 2, [])
@@ -97,18 +99,18 @@ def test_implication_graph_get_conflict_clause():
     ig.create_node(2, 4, [-1])
     ig.create_node(3, 4, [-1, -7])
     ig.create_node(-9, 4, [3])
-    ig.create_node(4, 4, [2,3])
-    ig.create_node(6, 4, [4,-9])
+    ig.create_node(4, 4, [2, 3])
+    ig.create_node(6, 4, [4, -9])
     ig.create_node(5, 4, [-8, 4])
     ig.create_node(-5, 4, [6])
 
     res = ig.get_conflict_clause()
     print(res)
-    assert res == {-1, -7, -8}
+    assert res == ({-1, -7, -8}, 2)
 
     ig = ImplicationGraph()
 
-    # if we remove w3 and add a link between x2 and x8 we should get x2 as UIP
+    # if we remove x3-x4 and add a link between x2 and x8 we should get x2 as UIP
     ig.create_node(-7, 1, [])
     ig.create_node(-9, 3, [])
     ig.create_node(-1, 4, [])
@@ -116,12 +118,12 @@ def test_implication_graph_get_conflict_clause():
     ig.create_node(-8, 4, [2])
     ig.create_node(3, 4, [-1, -7])
     ig.create_node(4, 4, [2])
-    ig.create_node(6, 4, [4,-9])
+    ig.create_node(6, 4, [4, -9])
     ig.create_node(5, 4, [-8, 4])
     ig.create_node(-5, 4, [6])
 
     res = ig.get_conflict_clause()
-    assert res == {2, -9}
+    assert res == ({2, -9}, 3)
 
     ig = ImplicationGraph()
 
@@ -129,24 +131,23 @@ def test_implication_graph_get_conflict_clause():
     ig.create_node(1, 0, [])
     ig.create_node(2, 0, [])
     ig.create_node(3, 1, [])
-    ig.create_node(4, 1, [1,3])
-    ig.create_node(5, 1, [2,4])
+    ig.create_node(4, 1, [1, 3])
+    ig.create_node(5, 1, [2, 4])
     ig.create_node(6, 2, [])
-    ig.create_node(7, 2, [4,6])
-    ig.create_node(8, 2, [5,7])
+    ig.create_node(7, 2, [4, 6])
+    ig.create_node(8, 2, [5, 7])
     ig.create_node(9, 2, [8])
     ig.create_node(10, 3, [])
     ig.create_node(11, 3, [10])
     ig.create_node(12, 4, [])
-    ig.create_node(13, 4, [11,12])
-    ig.create_node(14, 4, [4,7,13])
-    ig.create_node(15, 4, [8,9,14])
+    ig.create_node(13, 4, [11, 12])
+    ig.create_node(14, 4, [4, 7, 13])
+    ig.create_node(15, 4, [8, 9, 14])
     ig.create_node(16, 4, [13])
     ig.create_node(-15, 4, [16])
 
-
     res = ig.get_conflict_clause()
-    assert res == {13, 7, 4, 8, 9}
+    assert res == ({13, 7, 4, 8, 9}, 2)
 
     ig = ImplicationGraph()
 
@@ -154,23 +155,22 @@ def test_implication_graph_get_conflict_clause():
     ig.create_node(1, 0, [])
     ig.create_node(2, 0, [])
     ig.create_node(3, 1, [])
-    ig.create_node(4, 1, [1,3])
-    ig.create_node(5, 1, [2,4])
+    ig.create_node(4, 1, [1, 3])
+    ig.create_node(5, 1, [2, 4])
     ig.create_node(6, 2, [])
-    ig.create_node(7, 2, [4,6])
-    ig.create_node(8, 2, [5,7])
+    ig.create_node(7, 2, [4, 6])
+    ig.create_node(8, 2, [5, 7])
     ig.create_node(9, 2, [8])
     ig.create_node(10, 3, [])
     ig.create_node(11, 3, [10])
     ig.create_node(12, 4, [])
-    ig.create_node(13, 4, [11,12])
-    ig.create_node(14, 4, [4,7,13])
+    ig.create_node(13, 4, [11, 12])
+    ig.create_node(14, 4, [4, 7, 13])
     # here we add 3, 10 as parents
-    ig.create_node(15, 4, [3, 8,9,10,14])
+    ig.create_node(15, 4, [3, 8, 9, 10, 14])
     ig.create_node(16, 4, [13])
     # here we add 1,2 as parents
-    ig.create_node(-15, 4, [1,2,16])
-
+    ig.create_node(-15, 4, [1, 2, 16])
 
     res = ig.get_conflict_clause()
-    assert res == {13, 4,7, 8,9, 3, 10, 1, 2}
+    assert res == ({13, 4, 7, 8, 9, 3, 10, 1, 2}, 3)
