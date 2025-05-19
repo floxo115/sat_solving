@@ -84,11 +84,34 @@ class ImplicationGraph(object):
             self.nodes[variable] = node
             return ImplicationGraphStates.NOT_CONFLICT
 
+    def delete_node(self, variable: int):
+        """
+        Removes the node with the given variable and all of its children.
+        :param variable: Variable of the node
+        :return: Nothing
+        """
+
+        to_delete = [variable]
+        already_deleted = set()
+        while len(to_delete) > 0:
+            cur_variable = to_delete.pop()
+            if cur_variable in already_deleted:
+                continue
+            for parent in self.nodes[cur_variable].parents:
+                if parent not in already_deleted:
+                    self.nodes[parent].children.remove(cur_variable)
+            node = self.nodes[cur_variable]
+            to_delete.extend(node.children)
+            del self.nodes[cur_variable]
+            already_deleted.add(cur_variable)
+
+
+
     def get_conflict_clause(self) -> Tuple[Set[int], int]:
         """
         Returns the conflict clause of the Implication Graph and its second-highest decision level
         For deriving the conflict clause the last UIP is computed.
-        :return:
+        :return: The conflict clause as a tuple and the second-highest decision level
         """
         if self.nodes[CONFLICT_NODE_IDX] is None:
             raise ImplicationGraphException("no UIP without a conflict clause")

@@ -174,3 +174,93 @@ def test_implication_graph_get_conflict_clause():
 
     res = ig.get_conflict_clause()
     assert res == ({13, 4, 7, 8, 9, 3, 10, 1, 2}, 3)
+
+def test_implication_graph_delete_node():
+    ig = ImplicationGraph()
+
+    # IG from paper / example IGraph1
+    ig.create_node(-7, 1, [])
+    ig.create_node(-8, 2, [])
+    ig.create_node(-9, 3, [])
+    ig.create_node(-1, 4, [])
+    ig.create_node(2, 4, [-1])
+    ig.create_node(3, 4, [-1, -7])
+    ig.create_node(4, 4, [2, 3])
+    ig.create_node(6, 4, [4, -9])
+    ig.create_node(5, 4, [-8, 4])
+    ig.create_node(-5, 4, [6])
+
+    ig.delete_node(-1)
+    assert len(ig.nodes) == 3
+    assert set(ig.nodes.keys()) == {-9, -7, -8}
+
+    ig = ImplicationGraph()
+
+    # IG from paper / example IGraph1
+    ig.create_node(-7, 1, [])
+    ig.create_node(-8, 2, [])
+    ig.create_node(-9, 3, [])
+    ig.create_node(-1, 4, [])
+    ig.create_node(2, 4, [-1])
+    ig.create_node(3, 4, [-1, -7])
+    ig.create_node(4, 4, [2, 3])
+    ig.create_node(6, 4, [4, -9])
+    ig.create_node(5, 4, [-8, 4])
+    ig.create_node(-5, 4, [6])
+
+    ig.delete_node(3)
+    assert len(ig.nodes) == 5
+    assert set(ig.nodes.keys()) == {-7, -1, 2, -8, -9}
+
+    ig = ImplicationGraph()
+
+    # IGraph from example3
+    ig.create_node(1, 0, [])
+    ig.create_node(2, 0, [])
+    ig.create_node(3, 1, [])
+    ig.create_node(4, 1, [1, 3])
+    ig.create_node(5, 1, [2, 4])
+    ig.create_node(6, 2, [])
+    ig.create_node(7, 2, [4, 6])
+    ig.create_node(8, 2, [5, 7])
+    ig.create_node(9, 2, [8])
+    ig.create_node(10, 3, [])
+    ig.create_node(11, 3, [10])
+    ig.create_node(12, 4, [])
+    ig.create_node(13, 4, [11, 12])
+    ig.create_node(14, 4, [4, 7, 13])
+    ig.create_node(15, 4, [8, 9, 14])
+    ig.create_node(16, 4, [13])
+    ig.create_node(-15, 4, [16])
+
+    ig.delete_node(1)
+    assert len(ig.nodes) == 9
+    assert set(ig.nodes.keys()) == {2,3,6,10,12, 11,13,16,-15}
+
+    ig = ImplicationGraph()
+
+    # IGraph from example3
+    ig.create_node(1, 0, [])
+    ig.create_node(2, 0, [])
+    ig.create_node(3, 1, [])
+    ig.create_node(4, 1, [1, 3])
+    ig.create_node(5, 1, [2, 4])
+    ig.create_node(6, 2, [])
+    ig.create_node(7, 2, [4, 6])
+    ig.create_node(8, 2, [5, 7])
+    ig.create_node(9, 2, [8])
+    ig.create_node(10, 3, [])
+    ig.create_node(11, 3, [10])
+    ig.create_node(12, 4, [])
+    ig.create_node(13, 4, [11, 12])
+    ig.create_node(14, 4, [4, 7, 13])
+    ig.create_node(15, 4, [8, 9, 14])
+    ig.create_node(16, 4, [13])
+    ig.create_node(-15, 4, [16])
+
+    ig.delete_node(7)
+    assert len(ig.nodes) == 12
+    assert set(ig.nodes.keys()) == {1,2,3,4,5,6,10,11,12,13,16,-15}
+
+    assert len(ig.nodes[-15].children) == 0
+    assert len(ig.nodes[13].children) == 1
